@@ -1,0 +1,12 @@
+Best gain ratio is 0.08341220587279066
+Critical value:7.82
+Chisquare:4.596727247576916
+Tree built with nodecount:0
+At Eval total Attr:275
+At Eval total testSet Attr:275
+Good eval:100.0
+Validation Accuracy:77.82
+At Eval total Attr:275
+At Eval total testSet Attr:275
+Good eval:100.0
+Testing Accuracy:74.832

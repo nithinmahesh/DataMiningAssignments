@@ -5,6 +5,7 @@ import pprint
 import random
 import math
 from arff import  *
+from scipy.stats import chi2
 
 g = 0
 def ChildCount():
@@ -32,13 +33,54 @@ class Tree(object):
     def assign_value(self, value):
         self.value = value
 
-def ChooseBestAttribute(Examples, Targetattribute, Attributes):
-    usegainratio = True
+def ChooseBestAttribute(Examples, Targetattribute, Attributes, confidence, usegainratio):
+    bestattr = None
     if usegainratio:
-        return ChooseBestAttributeByGainRatio(Examples, Targetattribute, Attributes)
+        bestattr = ChooseBestAttributeByGainRatio(Examples, Targetattribute, Attributes)
     else:
-        return ChooseBestAttributeByGain(Examples, Targetattribute, Attributes)
+        bestattr = ChooseBestAttributeByGain(Examples, Targetattribute, Attributes)
+        
+    if ShouldStopByChiSquare(Examples, Targetattribute, Attributes, bestattr, confidence):
+        return None
+    else:
+        return bestattr
     
+def ShouldStopByChiSquare(Examples, Targetattribute, Attributes, bestattr, confidence):
+    if bestattr == None:
+        return True
+    chisqvalue95 = [3.84, 5.99, 7.82, 9.49, 11.07, 12.59, 14.07, 15.51, 16.92, 18.31]
+    chisqvalue99 = [6.64, 9.21, 11.34, 13.28, 15.09, 16.81, 18.48, 20.09, 21.67, 23.21]
+    limit = chi2.isf(1 - confidence, len(bestattr[1]) - 1 - 1)
+    CustomPrint("Critical value:" + str(limit))
+    totalpos = totalneg = 0
+    targetAttrIndex = GetAttrIndex(Attributes, Targetattribute)
+    bestAttrIndex = GetAttrIndex(Attributes, bestattr)
+    chisquare = 0
+    for data in Examples:
+        if data[targetAttrIndex] == "True":
+            totalpos += 1
+        elif data[targetAttrIndex] == "False":
+            totalneg += 1
+    for value in bestattr[1]:
+        pos = neg = 0
+        expos = exneg = 0
+        for data in Examples:
+            if data[bestAttrIndex] == value:
+                if data[targetAttrIndex] == "True":
+                    pos += 1
+                elif data[targetAttrIndex] == "False":
+                    neg += 1
+        expos = totalpos * (pos + neg) / (totalpos + totalneg)
+        exneg = totalneg * (pos + neg) / (totalpos + totalneg)
+        if expos != 0:
+            chisquare += (pos - expos)**2 / expos 
+        if exneg != 0:
+            chisquare += (neg - exneg)**2 / exneg
+    CustomPrint("Chisquare:" + str(chisquare))
+    if chisquare > limit:
+        return False
+    return True
+
 def ChooseBestAttributeByGain(Examples, Targetattribute, Attributes):
     pos = neg = totalCount = 0
     targetAttrIndex = GetAttrIndex(Attributes, Targetattribute)
@@ -80,7 +122,7 @@ def ChooseBestAttributeByGain(Examples, Targetattribute, Attributes):
             if gain > bestgain and gain != entropys:
                 bestattr = attr
                 bestgain = gain
-    print("Best gain is " + str(bestgain))
+    CustomPrint("Best gain is " + str(bestgain))
     if bestattr is None:
         CustomPrint("Returning none attr as best attr")
     return bestattr
@@ -130,17 +172,17 @@ def ChooseBestAttributeByGainRatio(Examples, Targetattribute, Attributes):
                 if gainratio > bestgainratio and gain != entropys:
                     bestattr = attr
                     bestgainratio = gainratio
-    print("Best gain ratio is " + str(bestgainratio))
+    CustomPrint("Best gain ratio is " + str(bestgainratio))
     if bestattr is None:
         CustomPrint("Returning none attr as best attr")
     return bestattr
-        
+    
 def GetAttrIndex(Attributes, TargetAttribute):
     for i in range(len(Attributes)):
         if Attributes[i][0] == TargetAttribute[0]:
             return i
     
-def ID3(Examples, Targetattribute, Attributes):
+def ID3(Examples, Targetattribute, Attributes, confidence, usegainratio):
     "Algorithm for ID3 Machine Learning"
     CustomPrint("TotalDataCount:" + str(len(Examples)))
     CustomPrint("TotalAttrinDataCount:" + str(len(Examples[0])))
@@ -176,7 +218,7 @@ def ID3(Examples, Targetattribute, Attributes):
             CustomPrint("Assigned False")
             return root
         
-    bestAttr = ChooseBestAttribute(Examples, Targetattribute, Attributes)
+    bestAttr = ChooseBestAttribute(Examples, Targetattribute, Attributes, confidence, usegainratio)
     if bestAttr is None:
         if positiveCount > negativeCount:
             root.assign_label("True")
@@ -215,7 +257,7 @@ def ID3(Examples, Targetattribute, Attributes):
             del newAttrSet[bestAttrIndex]
             for member in exampleSubset:
                 del member[bestAttrIndex]
-            child = ID3(exampleSubset, Targetattribute, newAttrSet)
+            child = ID3(exampleSubset, Targetattribute, newAttrSet, confidence, usegainratio)
             root.add_child(child)
             child.assign_value(value)
     if len(root.children) == 0:
@@ -256,8 +298,8 @@ def PrintTree(root):
             myq.enqueue(child)
     
 def Evaluate(tree, testSet, TargetAttribute, Attributes):
-    print("At Eval total Attr:" + str(len(Attributes)))
-    print("At Eval total testSet Attr:" + str(len(testSet[0])))
+    CustomPrint("At Eval total Attr:" + str(len(Attributes)))
+    CustomPrint("At Eval total testSet Attr:" + str(len(testSet[0])))
     totalCount = len(testSet)
     positive = good = 0
     targetAttrIndex = GetAttrIndex(Attributes, TargetAttribute)
@@ -270,7 +312,7 @@ def Evaluate(tree, testSet, TargetAttribute, Attributes):
             positive += 1
         if actual == "True" or actual == "False":
             good += 1
-    print("Good eval:" + str(float(good/totalCount)*100))
+    CustomPrint("Good eval:" + str(float(good/totalCount)*100))
     return float(positive/totalCount)*100
 
 def GetPrediction(tree, test, TargetAttribute, Attributes):
@@ -303,28 +345,35 @@ a = arff.load(open('training_subsetD.arff'))
 for attr in a['attributes']:
     attr[1].append(None)
 
-tree = ID3(a['data'], a['attributes'][-1], a['attributes'])
+confidenceset = [0, 0.95, 0.99]
+usegainratioset = [True, False]
 
-PrintTree(tree)
+for confidence in confidenceset:
+    for usegainratio in usegainratioset:
+        g=0
+        print("Configuration confidence:" + str(confidence) + " usegainratio:" + str(usegainratio))
+        tree = ID3(a['data'], a['attributes'][-1], a['attributes'], confidence, usegainratio)
 
-print("Tree built with nodecount:" + str(g))
+        PrintTree(tree)
 
-validationData = arff.load(open('validation_subsetD.arff'))
-#validationData = arff.load(open(r'C:\Users\nithinm\Documents\MachineLearningPedro\Assignment1\Data\AssignmentData\test.arff'))
+        print("Tree built with nodecount:" + str(g+1))
 
-for attr in validationData['attributes']:
-    attr[1].append(None)
+        validationData = arff.load(open('validation_subsetD.arff'))
+        #validationData = arff.load(open(r'C:\Users\nithinm\Documents\MachineLearningPedro\Assignment1\Data\AssignmentData\test.arff'))
 
-
-print("Validation Accuracy:" + str(Evaluate(tree, validationData['data'], validationData['attributes'][-1], validationData['attributes'])))
-
-testData = arff.load(open('testingD.arff'))
+        for attr in validationData['attributes']:
+            attr[1].append(None)
 
 
-for attr in testData['attributes']:
-    attr[1].append(None)
+        print("Validation Accuracy:" + str(Evaluate(tree, validationData['data'], validationData['attributes'][-1], validationData['attributes'])))
 
-print("Testing Accuracy:" + str(Evaluate(tree, testData['data'], testData['attributes'][-1], testData['attributes'])))
+        testData = arff.load(open('testingD.arff'))
+
+
+        for attr in testData['attributes']:
+            attr[1].append(None)
+
+        print("Testing Accuracy:" + str(Evaluate(tree, testData['data'], testData['attributes'][-1], testData['attributes'])))
 
 # print ("Hello, Python!")
 # x=15

@@ -1,0 +1,24 @@
+Configuration confidence:0 usegainratio:True
+Tree built with nodecount:29956
+Validation Accuracy:75.77000000000001
+Testing Accuracy:71.016
+Configuration confidence:0 usegainratio:False
+Tree built with nodecount:53977
+Validation Accuracy:75.58
+Testing Accuracy:70.93199999999999
+Configuration confidence:0.95 usegainratio:True
+Tree built with nodecount:53977
+Validation Accuracy:77.82
+Testing Accuracy:74.832
+Configuration confidence:0.95 usegainratio:False
+Tree built with nodecount:54356
+Validation Accuracy:77.51
+Testing Accuracy:74.536
+Configuration confidence:0.99 usegainratio:True
+Tree built with nodecount:54356
+Validation Accuracy:77.82
+Testing Accuracy:74.832
+Configuration confidence:0.99 usegainratio:False
+Tree built with nodecount:54629
+Validation Accuracy:77.53999999999999
+Testing Accuracy:74.632

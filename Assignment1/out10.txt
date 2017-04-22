@@ -1,0 +1,4 @@
+Best gain is 0.04827392441242376
+Critical value:11.07
+Chisquare:2230.73478480057
+Best gain is 0.023827766811306036
