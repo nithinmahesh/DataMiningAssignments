@@ -1,0 +1,9 @@
+Tree built with nodecount:24055
+At Eval total Attr:275
+At Eval total testSet Attr:275
+Good eval:100.0
+Validation Accuracy:75.58
+At Eval total Attr:275
+At Eval total testSet Attr:275
+Good eval:100.0
+Testing Accuracy:70.93199999999999
