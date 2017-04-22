@@ -33,7 +33,11 @@ class Tree(object):
         self.value = value
 
 def ChooseBestAttribute(Examples, Targetattribute, Attributes):
-    return ChooseBestAttributeByGain(Examples, Targetattribute, Attributes)
+    usegainratio = True
+    if usegainratio:
+        return ChooseBestAttributeByGainRatio(Examples, Targetattribute, Attributes)
+    else:
+        return ChooseBestAttributeByGain(Examples, Targetattribute, Attributes)
     
 def ChooseBestAttributeByGain(Examples, Targetattribute, Attributes):
     pos = neg = totalCount = 0
@@ -76,12 +80,60 @@ def ChooseBestAttributeByGain(Examples, Targetattribute, Attributes):
             if gain > bestgain and gain != entropys:
                 bestattr = attr
                 bestgain = gain
+    print("Best gain is " + str(bestgain))
     if bestattr is None:
         CustomPrint("Returning none attr as best attr")
     return bestattr
     
 def ChooseBestAttributeByGainRatio(Examples, Targetattribute, Attributes):
-    return Attributes[random.randint(0, len(Attributes) - 2)]
+    pos = neg = totalCount = 0
+    targetAttrIndex = GetAttrIndex(Attributes, Targetattribute)
+    for data in Examples:
+        if data[targetAttrIndex] == "True":
+            pos += 1
+            totalCount += 1
+        elif data[targetAttrIndex] == "False":
+            neg += 1
+            totalCount += 1
+    entropys = 0
+    if pos != 0:
+        entropys -= pos/(totalCount) * math.log2(pos/(totalCount))
+    if neg != 0:
+        entropys -= neg/(totalCount) * math.log2(neg/(totalCount))
+    bestgainratio = 0
+    bestattr = None
+    for attr in Attributes:
+        if attr != Targetattribute:
+            gain = entropys
+            split = 0
+            attrIndex = GetAttrIndex(Attributes, attr)
+            for value in attr[1]:
+                pos = neg = count = 0
+                for data in Examples:
+                    if data[attrIndex] == value:
+                        count += 1
+                        if data[targetAttrIndex] == "True":
+                            pos += 1
+                        elif data[targetAttrIndex] == "False":
+                            neg += 1
+                if count != 0:
+                    #CustomPrint(str(count) + " " + str(pos) + " " + str(neg))
+                    newentropy = 0
+                    if pos != 0:
+                        newentropy -= pos/(count) * math.log2(pos/(count))
+                    if neg != 0:
+                        newentropy -= neg/(count) * math.log2(neg/(count))
+                    gain -= count/totalCount * newentropy
+                    split -= count/totalCount * math.log2(count/totalCount)
+            if split != 0:
+                gainratio = gain/split
+                if gainratio > bestgainratio and gain != entropys:
+                    bestattr = attr
+                    bestgainratio = gainratio
+    print("Best gain ratio is " + str(bestgainratio))
+    if bestattr is None:
+        CustomPrint("Returning none attr as best attr")
+    return bestattr
         
 def GetAttrIndex(Attributes, TargetAttribute):
     for i in range(len(Attributes)):
