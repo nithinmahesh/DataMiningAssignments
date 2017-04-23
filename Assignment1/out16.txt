@@ -1,0 +1,48 @@
+Configuration Confidence:0 Usegainratio:True
+Tree built with nodecount:41235
+Precision: 0.9739970282317979
+Recall: 0.59107303877367
+Validation Accuracy:90.58
+Precision: 0.3587690768076057
+Recall: 0.22790845518118247
+Testing Accuracy:70.316
+Configuration Confidence:0 Usegainratio:False
+Tree built with nodecount:33153
+Precision: 0.9732283464566929
+Recall: 0.5572587917042381
+Validation Accuracy:89.84
+Precision: 0.34700722394220845
+Recall: 0.21376350921805468
+Testing Accuracy:70.088
+Configuration Confidence:0.95 Usegainratio:True
+Tree built with nodecount:10
+Precision: 0.6595744680851063
+Recall: 0.04192966636609558
+Validation Accuracy:78.27
+Precision: 0.518796992481203
+Recall: 0.010966306420851876
+Testing Accuracy:74.85199999999999
+Configuration Confidence:0.95 Usegainratio:False
+Tree built with nodecount:823
+Precision: 0.7716701902748414
+Recall: 0.16456266907123535
+Validation Accuracy:80.39
+Precision: 0.48536209553158705
+Recall: 0.050063572790845515
+Testing Accuracy:74.756
+Configuration Confidence:0.99 Usegainratio:True
+Tree built with nodecount:10
+Precision: 0.6595744680851063
+Recall: 0.04192966636609558
+Validation Accuracy:78.27
+Precision: 0.518796992481203
+Recall: 0.010966306420851876
+Testing Accuracy:74.85199999999999
+Configuration Confidence:0.99 Usegainratio:False
+Tree built with nodecount:501
+Precision: 0.7522522522522522
+Recall: 0.15058611361587015
+Validation Accuracy:80.06
+Precision: 0.5597722960151803
+Recall: 0.04688493324856961
+Testing Accuracy:75.08399999999999

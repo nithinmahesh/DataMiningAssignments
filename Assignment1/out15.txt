@@ -1,0 +1,48 @@
+Configuration Confidence:0 Usegainratio:True
+Tree built with nodecount:29956
+Validation Accuracy:75.77000000000001
+Testing Accuracy:71.016
+Configuration Confidence:0 Usegainratio:False
+Tree built with nodecount:24022
+Validation Accuracy:75.58
+Testing Accuracy:70.93199999999999
+Configuration Confidence:0.01 Usegainratio:True
+Tree built with nodecount:9835
+Validation Accuracy:77.25
+Testing Accuracy:73.83999999999999
+Configuration Confidence:0.01 Usegainratio:False
+Tree built with nodecount:17017
+Validation Accuracy:76.47
+Testing Accuracy:72.516
+Configuration Confidence:0.1 Usegainratio:True
+Tree built with nodecount:5614
+Validation Accuracy:77.44
+Testing Accuracy:74.18400000000001
+Configuration Confidence:0.1 Usegainratio:False
+Tree built with nodecount:11599
+Validation Accuracy:76.27000000000001
+Testing Accuracy:72.256
+Configuration Confidence:0.9 Usegainratio:True
+Tree built with nodecount:1
+Validation Accuracy:77.82
+Testing Accuracy:74.832
+Configuration Confidence:0.9 Usegainratio:False
+Tree built with nodecount:648
+Validation Accuracy:77.42999999999999
+Testing Accuracy:74.28
+Configuration Confidence:0.95 Usegainratio:True
+Tree built with nodecount:1
+Validation Accuracy:77.82
+Testing Accuracy:74.832
+Configuration Confidence:0.95 Usegainratio:False
+Tree built with nodecount:380
+Validation Accuracy:77.51
+Testing Accuracy:74.536
+Configuration Confidence:0.99 Usegainratio:True
+Tree built with nodecount:1
+Validation Accuracy:77.82
+Testing Accuracy:74.832
+Configuration Confidence:0.99 Usegainratio:False
+Tree built with nodecount:274
+Validation Accuracy:77.53999999999999
+Testing Accuracy:74.632
