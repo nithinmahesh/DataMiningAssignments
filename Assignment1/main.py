@@ -8,7 +8,9 @@ from arff import  *
 from scipy.stats import chi2
 
 g = 0
+
 def ChildCount():
+    "A counter to keep track of number of nodes"
     global g
     g += 1
     #print(str(g))
@@ -34,33 +36,42 @@ class Tree(object):
         self.value = value
 
 def ChooseBestAttribute(Examples, Targetattribute, Attributes, confidence, usegainratio):
+    "Chooses best attribute for the current node"
     bestattr = None
+    
+    # First get the best attribute
     if usegainratio:
         bestattr = ChooseBestAttributeByGainRatio(Examples, Targetattribute, Attributes)
     else:
         bestattr = ChooseBestAttributeByGain(Examples, Targetattribute, Attributes)
         
+    # Verify through ChiSquare test that it is indeed worth adding this branch
     if ShouldStopByChiSquare(Examples, Targetattribute, Attributes, bestattr, confidence):
         return None
     else:
         return bestattr
     
 def ShouldStopByChiSquare(Examples, Targetattribute, Attributes, bestattr, confidence):
+    "Calculates Chi Square heuristic to decide whether to stop splitting"
     if bestattr == None:
         return True
-    chisqvalue95 = [3.84, 5.99, 7.82, 9.49, 11.07, 12.59, 14.07, 15.51, 16.92, 18.31]
-    chisqvalue99 = [6.64, 9.21, 11.34, 13.28, 15.09, 16.81, 18.48, 20.09, 21.67, 23.21]
+    
+    # Get the corresponding critical value
     limit = chi2.isf(1 - confidence, len(bestattr[1]) - 1 - 1)
     CustomPrint("Critical value:" + str(limit))
     totalpos = totalneg = 0
     targetAttrIndex = GetAttrIndex(Attributes, Targetattribute)
     bestAttrIndex = GetAttrIndex(Attributes, bestattr)
     chisquare = 0
+    
+    # 1. Count the total positive and negative examples
     for data in Examples:
         if data[targetAttrIndex] == "True":
             totalpos += 1
         elif data[targetAttrIndex] == "False":
             totalneg += 1
+            
+    # Calculate chi square test statistic by iterating over every possible value
     for value in bestattr[1]:
         pos = neg = 0
         expos = exneg = 0
@@ -77,13 +88,18 @@ def ShouldStopByChiSquare(Examples, Targetattribute, Attributes, bestattr, confi
         if exneg != 0:
             chisquare += (neg - exneg)**2 / exneg
     CustomPrint("Chisquare:" + str(chisquare))
+    
+    # Reject if lesser than critical value
     if chisquare > limit:
         return False
     return True
 
 def ChooseBestAttributeByGain(Examples, Targetattribute, Attributes):
+    "Choose the best attribute by the gain in entropy it provides"
     pos = neg = totalCount = 0
     targetAttrIndex = GetAttrIndex(Attributes, Targetattribute)
+    
+    # Count the positive and negative examples
     for data in Examples:
         if data[targetAttrIndex] == "True":
             pos += 1
@@ -91,11 +107,15 @@ def ChooseBestAttributeByGain(Examples, Targetattribute, Attributes):
         elif data[targetAttrIndex] == "False":
             neg += 1
             totalCount += 1
+            
+    # Calculate entropy of the current examples
     entropys = 0
     if pos != 0:
         entropys -= pos/(totalCount) * math.log2(pos/(totalCount))
     if neg != 0:
         entropys -= neg/(totalCount) * math.log2(neg/(totalCount))
+    
+    # Calculate entropy of each child and assess the gain this attribute provides
     bestgain = 0
     bestattr = None
     for attr in Attributes:
@@ -123,13 +143,18 @@ def ChooseBestAttributeByGain(Examples, Targetattribute, Attributes):
                 bestattr = attr
                 bestgain = gain
     CustomPrint("Best gain is " + str(bestgain))
+    
+    # Return the best attribute which gives the highest gain
     if bestattr is None:
         CustomPrint("Returning none attr as best attr")
     return bestattr
     
 def ChooseBestAttributeByGainRatio(Examples, Targetattribute, Attributes):
+    "Choose best attribute by highest gain ratio"
     pos = neg = totalCount = 0
     targetAttrIndex = GetAttrIndex(Attributes, Targetattribute)
+    
+    # Count the positive and negative examples
     for data in Examples:
         if data[targetAttrIndex] == "True":
             pos += 1
@@ -137,11 +162,15 @@ def ChooseBestAttributeByGainRatio(Examples, Targetattribute, Attributes):
         elif data[targetAttrIndex] == "False":
             neg += 1
             totalCount += 1
+    
+    # Calculate entropy of the current examples
     entropys = 0
     if pos != 0:
         entropys -= pos/(totalCount) * math.log2(pos/(totalCount))
     if neg != 0:
         entropys -= neg/(totalCount) * math.log2(neg/(totalCount))
+    
+    # Calculate entropy of each child and assess the gain ratio this attribute provides
     bestgainratio = 0
     bestattr = None
     for attr in Attributes:
@@ -173,11 +202,14 @@ def ChooseBestAttributeByGainRatio(Examples, Targetattribute, Attributes):
                     bestattr = attr
                     bestgainratio = gainratio
     CustomPrint("Best gain ratio is " + str(bestgainratio))
+    
+    # Return the best attribute which gives the highest gain
     if bestattr is None:
         CustomPrint("Returning none attr as best attr")
     return bestattr
     
 def GetAttrIndex(Attributes, TargetAttribute):
+    "Given an attribute and set of all attributes returns the index of the given attribute in the attribute set"
     for i in range(len(Attributes)):
         if Attributes[i][0] == TargetAttribute[0]:
             return i
@@ -191,6 +223,8 @@ def ID3(Examples, Targetattribute, Attributes, confidence, usegainratio):
     positiveCount = negativeCount = 0
     targetAttrIndex = GetAttrIndex(Attributes, Targetattribute)
     CustomPrint("targetAttrIndex=" + str(targetAttrIndex))
+    
+    # Count positive and negative examples
     for member in Examples:
         if member[targetAttrIndex] == 'True':
             positiveCount += 1
@@ -200,14 +234,20 @@ def ID3(Examples, Targetattribute, Attributes, confidence, usegainratio):
     CustomPrint(negativeCount)
     if positiveCount+negativeCount != len(Examples):
         CustomPrint("Bad comparisons")
+    
+    # All positive case
     if negativeCount == 0:
         root.assign_label("True")
         CustomPrint("Assigned True")
         return root
+        
+    # All negative case
     if positiveCount == 0:
         root.assign_label("False")
         CustomPrint("Assigned False")
         return root
+        
+    # Out of attributes - assign the most occurring label
     if len(Attributes) == 0 or len(Attributes) == 1:
         if positiveCount > negativeCount:
             root.assign_label("True")
@@ -218,7 +258,10 @@ def ID3(Examples, Targetattribute, Attributes, confidence, usegainratio):
             CustomPrint("Assigned False")
             return root
         
+    # Choose the best attribute based on the given setting
     bestAttr = ChooseBestAttribute(Examples, Targetattribute, Attributes, confidence, usegainratio)
+    
+    # If we did not find an attribute, assign the most occurring label
     if bestAttr is None:
         if positiveCount > negativeCount:
             root.assign_label("True")
@@ -232,8 +275,11 @@ def ID3(Examples, Targetattribute, Attributes, confidence, usegainratio):
     
     CustomPrint("Best Attr:" + bestAttr[0])
     CustomPrint("Best Attr Indx:" + str(bestAttrIndex))
+    
+    # Assign label as attribute name
     root.assign_label(bestAttr[0])
         
+    # Add a branch for each possible value
     for value in bestAttr[1]:
         CustomPrint("Adding child with value:" + str(value))
         exampleSubset = []
@@ -265,6 +311,7 @@ def ID3(Examples, Targetattribute, Attributes, confidence, usegainratio):
     return root
  
 class Queue:
+    "Generic Queue Implementation"
     def __init__(self):
         self.items = []
 
@@ -281,6 +328,7 @@ class Queue:
         return len(self.items)
 
 def PrintTree(root):
+    "Helper function to print the tree"
     myq = Queue()
     myq.enqueue(None)
     myq.enqueue(root);
@@ -298,88 +346,92 @@ def PrintTree(root):
             myq.enqueue(child)
     
 def Evaluate(tree, testSet, TargetAttribute, Attributes):
+    "Evaluate a test set with the given built decision tree"
     CustomPrint("At Eval total Attr:" + str(len(Attributes)))
     CustomPrint("At Eval total testSet Attr:" + str(len(testSet[0])))
     totalCount = len(testSet)
     positive = good = 0
     targetAttrIndex = GetAttrIndex(Attributes, TargetAttribute)
+    
+    # PRedict for every test case
     for test in testSet:
         expected = test[targetAttrIndex]
         actual = GetPrediction(tree, test, TargetAttribute, Attributes)
         CustomPrint(test)
-        #print("Actual:" + str(actual) + " Expected:" + expected)
         if expected == actual:
             positive += 1
         if actual == "True" or actual == "False":
             good += 1
     CustomPrint("Good eval:" + str(float(good/totalCount)*100))
+    
+    # REturn the accuracy
     return float(positive/totalCount)*100
 
 def GetPrediction(tree, test, TargetAttribute, Attributes):
+    "Evaluate a single test case on the given built tree and return the predicted target attribute"
+    # Root is a leaf node
     if str(tree) == "True":
         return "True"
     elif str(tree) == "False":
         return "False"
     else:
+        # Root is a non-leaf node. FInd the attribute it is referring to
         for attr in Attributes:
             if str(tree) == attr[0]:
+                # Find the branch to continue the search by checking values on each branch for current attribute
                 for child in tree.children: 
                     if child.value == test[GetAttrIndex(Attributes, attr)]:
+                        # Found the branch, proceed with the prediction on this subtree
                         return GetPrediction(child, test, TargetAttribute, Attributes)
-                print("Missed path with test[value]:" + test[GetAttrIndex(Attributes, attr)])
-                for child in tree.children: 
-                    print(child.value)
-    print("Bad evaluation at node:" + tree.name + " " + str(tree.value))
     return str(tree)
     
 def CustomPrint(string):
     #print(string)
     return string
 
+# Load training data
 a = arff.load(open('training_subsetD.arff'))
 #a = arff.load(open(r'C:\Users\nithinm\Documents\MachineLearningPedro\Assignment1\Data\AssignmentData\test.arff'))
 
-#pprint.pprint(a['attributes'])
-#pprint.pprint(a['data'][0])
-
+# We assume unknown as None value. Hence add None as a possible value to all attributes
 for attr in a['attributes']:
     attr[1].append(None)
 
+# Various possible settings
 confidenceset = [0, 0.95, 0.99]
 usegainratioset = [True, False]
 
+# Iterate over all possible settings
 for confidence in confidenceset:
     for usegainratio in usegainratioset:
+        # Reset node counter
         g=0
-        print("Configuration confidence:" + str(confidence) + " usegainratio:" + str(usegainratio))
+        print("Configuration Confidence:" + str(confidence) + " Usegainratio:" + str(usegainratio))
+        
+        # GEnerate the decision tree from the training data
         tree = ID3(a['data'], a['attributes'][-1], a['attributes'], confidence, usegainratio)
 
         PrintTree(tree)
 
         print("Tree built with nodecount:" + str(g+1))
 
+        # Load validation data (a subset of training data which was intentionally excluded while building the tree)
         validationData = arff.load(open('validation_subsetD.arff'))
         #validationData = arff.load(open(r'C:\Users\nithinm\Documents\MachineLearningPedro\Assignment1\Data\AssignmentData\test.arff'))
 
+        # We assume unknown as None value. Hence add None as a possible value to all attributes
         for attr in validationData['attributes']:
             attr[1].append(None)
 
-
+        # Validate the accuracy of the tree with validation data 
         print("Validation Accuracy:" + str(Evaluate(tree, validationData['data'], validationData['attributes'][-1], validationData['attributes'])))
 
+        # Load test data
         testData = arff.load(open('testingD.arff'))
 
-
+        # We assume unknown as None value. Hence add None as a possible value to all attributes
         for attr in testData['attributes']:
             attr[1].append(None)
 
+        # Calculate the accuracy of the tree with test data 
         print("Testing Accuracy:" + str(Evaluate(tree, testData['data'], testData['attributes'][-1], testData['attributes'])))
-
-# print ("Hello, Python!")
-# x=15
-# x += 1
-# #x = 'foo'; 
-# CustomPrint(str(x))
-
-# list = ['abcd', 786 , 2.23, 'john', 70.2 ]
-# CustomPrint(list)

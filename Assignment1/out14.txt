@@ -1,0 +1,24 @@
+Configuration Confidence:0 Usegainratio:True
+Tree built with nodecount:29956
+Validation Accuracy:75.77000000000001
+Testing Accuracy:71.016
+Configuration Confidence:0 Usegainratio:False
+Tree built with nodecount:24022
+Validation Accuracy:75.58
+Testing Accuracy:70.93199999999999
+Configuration Confidence:0.95 Usegainratio:True
+Tree built with nodecount:1
+Validation Accuracy:77.82
+Testing Accuracy:74.832
+Configuration Confidence:0.95 Usegainratio:False
+Tree built with nodecount:380
+Validation Accuracy:77.51
+Testing Accuracy:74.536
+Configuration Confidence:0.99 Usegainratio:True
+Tree built with nodecount:1
+Validation Accuracy:77.82
+Testing Accuracy:74.832
+Configuration Confidence:0.99 Usegainratio:False
+Tree built with nodecount:274
+Validation Accuracy:77.53999999999999
+Testing Accuracy:74.632
