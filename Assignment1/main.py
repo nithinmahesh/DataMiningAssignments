@@ -435,7 +435,7 @@ def CustomPrint(string):
 g = 0
 
 # Load training data
-a = arff.load(open('training_subsetD_full.arff'))
+a = arff.load(open('training_subsetD.arff'))
 #a = arff.load(open(r'C:\Users\nithinm\Documents\MachineLearningPedro\Assignment1\Data\AssignmentData\test.arff'))
 
 # We assume unknown as None value. Hence add None as a possible value to all attributes
