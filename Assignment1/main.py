@@ -17,6 +17,8 @@ class Tree(object):
         self.name = name
         self.value = value
         self.children = []
+        self.positive = 0
+        self.negative = 0
         if children is not None:
             for child in children:
                 self.add_child(child)
@@ -30,6 +32,9 @@ class Tree(object):
         self.name=label
     def assign_value(self, value):
         self.value = value
+    def assign_counts(self, pos, neg):
+        self.positive = pos
+        self.negative = neg
 
 # -------------------------------------------------------------------------------------------
 # ID3 decision tree builder
@@ -55,7 +60,8 @@ def ID3(Examples, Targetattribute, Attributes, confidence, usegainratio):
     CustomPrint(negativeCount)
     if positiveCount+negativeCount != len(Examples):
         CustomPrint("Bad comparisons")
-    
+    root.assign_counts(positiveCount, negativeCount)
+        
     # All positive case
     if negativeCount == 0:
         root.assign_label("True")
@@ -417,6 +423,56 @@ def PrintTree(root):
         for child in el.children:
             myq.enqueue(child)
 
+def FindAndPrintBestTrueLabel(root):
+    "Find and print the best path for positive case"
+    maxPositive = FindMaxValue(root, True)
+    PrintBestPath(root,maxPositive, True)
+    
+def FindAndPrintBestFalseLabel(root):
+    "Find and print the best path for negative case"
+    maxPositive = FindMaxValue(root, False)
+    PrintBestPath(root,maxPositive, False)
+    
+def PrintBestPath(curr, max, positive):
+    "Prints the best path containing the max positive/negative value for the tree rooted at the given node"
+    if len(curr.children) == 0:
+        if positive:
+            if max == curr.positive and curr.name == "True":
+                print(str(curr.name) + " " + str(curr.value) + ":")
+                return True
+        else:
+            if max == curr.negative and curr.name == "False":
+                print(str(curr.name) + " " + str(curr.value) + ":")
+                return True
+    for child in curr.children:
+        if True == PrintBestPath(child, max, positive):
+            print(str(curr.name) + " " + str(curr.value) + ":")
+            return True
+    return False
+
+def FindMaxValue(root, positive):
+    "Find the maximum positive/negative value in the tree rooted at the given node"
+    max = 0 
+    myq = Queue()
+    myq.enqueue(None)
+    myq.enqueue(root);
+    while myq.size() != 0:
+        el = myq.dequeue()
+        if el is None:
+            CustomPrint('')
+            if myq.size() != 0:
+                myq.enqueue(None)
+            continue
+        if positive:
+            if el.positive > max and len(el.children) == 0 and el.name == "True":
+                max = el.positive
+        else:
+            if el.negative > max and len(el.children) == 0 and el.name == "False":
+                max = el.negative
+        for child in el.children:
+            myq.enqueue(child)
+    return max
+
 def GetAttrIndex(Attributes, TargetAttribute):
     "Given an attribute and set of all attributes returns the index of the given attribute in the attribute set"
     for i in range(len(Attributes)):
@@ -435,7 +491,8 @@ def CustomPrint(string):
 g = 0
 
 # Load training data
-a = arff.load(open('training_subsetD.arff'))
+a = arff.load(open('training_subsetD_full.arff'))
+#a = arff.load(open('training_subsetD.arff'))
 #a = arff.load(open(r'C:\Users\nithinm\Documents\MachineLearningPedro\Assignment1\Data\AssignmentData\test.arff'))
 
 # We assume unknown as None value. Hence add None as a possible value to all attributes
@@ -445,8 +502,6 @@ for attr in a['attributes']:
 # Various possible settings
 confidenceset = [0, 0.01, 0.1, 0.90, 0.95, 0.99]
 usegainratioset = [True, False]
-confidenceset = [0, 0.95, 0.99]
-
 
 # Iterate over all possible settings
 for confidence in confidenceset:
@@ -459,6 +514,9 @@ for confidence in confidenceset:
         tree = ID3(a['data'], a['attributes'][-1], a['attributes'], confidence, usegainratio)
 
         PrintTree(tree)
+        
+        FindAndPrintBestTrueLabel(tree)
+        FindAndPrintBestFalseLabel(tree)
 
         print("Tree built with nodecount:" + str(g+1))
 

@@ -1,0 +1,17 @@
+Configuration Confidence:0.99 Usegainratio:False
+False NULL
+US State \'(3.5-6.5]\:
+Session Request Count None:
+False NULL:
+SendEmail \'(-inf-1.5]\:
+Session Visit Count Other:
+Session First Referrer Top 5 Netscape:
+Session Browser Family \'(-inf-1.5]\:
+Session Request Count None:
+Tree built with nodecount:501
+Precision: 0.7522522522522522
+Recall: 0.15058611361587015
+Validation Accuracy:80.06
+Precision: 0.5597722960151803
+Recall: 0.04688493324856961
+Testing Accuracy:75.08399999999999
