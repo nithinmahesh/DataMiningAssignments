@@ -500,8 +500,9 @@ for attr in a['attributes']:
     attr[1].append(None)
 
 # Various possible settings
-confidenceset = [0, 0.01, 0.1, 0.90, 0.95, 0.99]
-usegainratioset = [True, False]
+# Add and remove settings as appropriate
+confidenceset = [0.99] #[0, 0.95, 0.99]
+usegainratioset = [False] #[True, False]
 
 # Iterate over all possible settings
 for confidence in confidenceset:
@@ -513,10 +514,10 @@ for confidence in confidenceset:
         # GEnerate the decision tree from the training data
         tree = ID3(a['data'], a['attributes'][-1], a['attributes'], confidence, usegainratio)
 
-        PrintTree(tree)
+        #PrintTree(tree)
         
-        FindAndPrintBestTrueLabel(tree)
-        FindAndPrintBestFalseLabel(tree)
+        #FindAndPrintBestTrueLabel(tree)
+        #FindAndPrintBestFalseLabel(tree)
 
         print("Tree built with nodecount:" + str(g+1))
 
