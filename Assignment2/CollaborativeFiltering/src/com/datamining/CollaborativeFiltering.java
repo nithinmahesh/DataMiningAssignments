@@ -27,8 +27,7 @@ public class CollaborativeFiltering {
         loadTrainingData(root + "\\src\\com\\datamining\\TrainingRatings.txt");
         doPostProcessing();
         System.out.println("Training done");
-        evaluateOnTestData(root + "\\src\\com\\datamining\\TestingRatings.txt");
-        printStats();
+        evaluateOnTestData(root + "\\src\\com\\datamining\\TestingRatings.txt", 0.25);
     }
 
     // Training Data Load Section
@@ -192,11 +191,13 @@ public class CollaborativeFiltering {
 
     // Start of Evaluate Test Data section
     // Do evaluation on test data
-    private static void evaluateOnTestData(String fileName) {
+    private static void evaluateOnTestData(String fileName, Double threshold) {
         String line = "";
         String delimiter = ",";
 
         int count = 0;
+        maesum = rmsesum = mae = rmse = 0.0;
+        testDataCount = 0;
 
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
 
@@ -210,7 +211,7 @@ public class CollaborativeFiltering {
                 v1 = Integer.parseInt(data[1]);
                 v2 = Integer.parseInt(data[0]);
                 final Double v3 = Double.parseDouble(data[2]);
-                addTestDataPoint(v1, v2, v3);
+                addTestDataPoint(v1, v2, v3, threshold);
 
                 if (count % 1000 == 0) {
                     System.out.println("Predictions for " + count + " entries.");
@@ -222,11 +223,13 @@ public class CollaborativeFiltering {
 
         mae = maesum / testDataCount;
         rmse = Math.sqrt(rmsesum / testDataCount);
+
+        printStats(threshold);
     }
 
     // Predict  on a single test data and get errors out of it
-    private static void addTestDataPoint(int userId, int movieId, double actualRating) {
-        Double predictedRating = predictVote(userId, movieId);
+    private static void addTestDataPoint(int userId, int movieId, double actualRating, Double threshold) {
+        Double predictedRating = predictVote(userId, movieId, threshold);
 //        System.out.println("Pred: " + predictedRating + " Actual: " + actualRating);
         testDataCount++;
         maesum += Math.abs(predictedRating - actualRating);
@@ -234,13 +237,16 @@ public class CollaborativeFiltering {
     }
 
     // Predict vote for a single test data
-    private static Double predictVote(Integer userId, Integer movieId) {
+    private static Double predictVote(Integer userId, Integer movieId, Double threshold) {
         Double expectedRating = 0.0;
 
         Double distSum = 0.0;
 
         for (Map.Entry<Integer, Double> entry : movieData.get(movieId).entrySet()) {
             Double dist = getDistance(userId, entry.getKey());
+            if (Math.abs(dist) < threshold) {
+                continue;
+            }
             Double diff = (entry.getValue() - userAvg.get(entry.getKey()));
 
             expectedRating += dist * diff;
@@ -271,7 +277,8 @@ public class CollaborativeFiltering {
     // End of Evaluate Test Data section
 
     // Prints final computed stats
-    private static void printStats() {
+    private static void printStats(Double threshold) {
+        System.out.println("Threshold: " + threshold);
         System.out.println("Test data count: " + testDataCount);
         System.out.println("Mean Absolute Error: " + mae);
         System.out.println("Root Mean Squared Error: " + rmse);
